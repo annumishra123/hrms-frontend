@@ -91,7 +91,7 @@ export const fetchAttendance = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await getAttendanceOverview();
-      return res.data.data; // ⚠️ backend { success, data: {today, trend, log} } bhejta hai — .data.data zaroori hai
+      return res.data.data; 
     } catch (err) {
       return rejectWithValue(err?.response?.data?.message || "Failed to load attendance");
     }
@@ -104,7 +104,7 @@ export const fetchMonthlyAttendance = createAsyncThunk(
   async ({ month, year }, { rejectWithValue }) => {
     try {
       const res = await getMonthlyAttendance(month, year);
-      return res.data.data; // ⚠️ yahan bhi { success, data: {monthlyLog, summary} } hai
+      return res.data.data; 
     } catch (err) {
       return rejectWithValue(err?.response?.data?.message || "Failed to load monthly attendance");
     }

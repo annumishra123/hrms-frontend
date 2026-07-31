@@ -33,11 +33,6 @@ export function disconnectAdminSocket() {
   }
 }
 
-
-
-
-
-
 // ---- Ticket events ----
 export function listenTicketNew(callback) {
   if (!socket) return;
@@ -55,4 +50,33 @@ export function listenTicketUpdated(callback) {
 export function removeTicketUpdatedListener(callback) {
   if (!socket) return;
   socket.off('ticket:updated', callback);
+}
+
+// ---- Leave events ----
+export function listenLeaveNew(callback) {
+  if (!socket) return;
+  socket.on('leave:new', callback);
+}
+export function removeLeaveNewListener(callback) {
+  if (!socket) return;
+  socket.off('leave:new', callback);
+}
+
+export function listenLeaveUpdated(callback) {
+  if (!socket) return;
+  socket.on('leave:updated', callback);
+}
+export function removeLeaveUpdatedListener(callback) {
+  if (!socket) return;
+  socket.off('leave:updated', callback);
+}
+
+// ---- Generic notification event (bell ke liye — sab types cover karega) ----
+export function listenNotificationNew(callback) {
+  if (!socket) return;
+  socket.on('notification:new', callback);
+}
+export function removeNotificationNewListener(callback) {
+  if (!socket) return;
+  socket.off('notification:new', callback);
 }

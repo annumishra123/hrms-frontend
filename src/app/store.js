@@ -18,7 +18,7 @@ import ticketsAdminReducer from '../features/tickets/ticketsAdminSlice';
 
 import officeLocationReducer from "../features/officeLocation/officeLocationSlice";
 
-
+import notificationReducer from '../features/notifications/notificationSlice';
 
 
 export const store = configureStore({
@@ -40,5 +40,6 @@ export const store = configureStore({
     holidays: holidayReducer,
     ticketsAdmin: ticketsAdminReducer,
     officeLocation: officeLocationReducer,
+    adminNotifications:notificationReducer,
   },
 });

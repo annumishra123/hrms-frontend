@@ -5,6 +5,7 @@ import { openSidebar } from "../../features/ui/uiSlice";
 import { logout } from "../../features/auth/authSlice";
 import Avatar from "../ui/Avatar";
 import { useNavigate } from "react-router-dom";
+import NotificationBell from './NotificationBell';
 
 export default function Topbar({ title }) {
   const dispatch = useDispatch();
@@ -40,6 +41,7 @@ export default function Topbar({ title }) {
 
       <button className="relative h-9 w-9 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100">
         <Bell size={19} />
+        <NotificationBell />
         <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
       </button>
 
