@@ -208,7 +208,7 @@ export default function PayrollPayslips() {
 
             {/* Mobile card list */}
             <div className="md:hidden divide-y divide-slate-100">
-              {payslips?.map((p) => (
+              {payslips.map((p) => (
                 <div key={p.id} className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
