@@ -146,7 +146,7 @@ export default function PayrollPayslips() {
 
         {payslipsStatus === "loading" ? (
           <Spinner full label="Loading payslips..." />
-        ) : payslips.length === 0 ? (
+        ) : payslips?.length === 0 ? (
           <p className="text-sm text-slate-400 px-5 py-10 text-center">No payslips found.</p>
         ) : (
           <>
@@ -165,7 +165,7 @@ export default function PayrollPayslips() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {payslips.map((p) => (
+                  {payslips?.map((p) => (
                     <tr key={p.id} className="hover:bg-slate-50/70">
                       <td className="table-td">
                         <div className="flex items-center gap-3">
@@ -208,7 +208,7 @@ export default function PayrollPayslips() {
 
             {/* Mobile card list */}
             <div className="md:hidden divide-y divide-slate-100">
-              {payslips.map((p) => (
+              {payslips?.map((p) => (
                 <div key={p.id} className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">

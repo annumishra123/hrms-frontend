@@ -1,3 +1,4 @@
+
 import axiosInstance from "./axios";
 
 /**
@@ -25,10 +26,17 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
+      // ⚠️ Login request pe 401 aana normal hai (galat password) —
+      // isse "session expired" nahi maanna, warna galat password pe bhi
+      // poora page reload/redirect ho jayega.
+      const isLoginRequest = error.config?.url?.includes("/auth/login");
+
       switch (error.response.status) {
         case 401:
-          sessionStorage.clear();
-          window.location.href = "/login";
+          if (!isLoginRequest) {
+            sessionStorage.clear();
+            window.location.href = "/login";
+          }
           break;
 
         case 403:

@@ -12,13 +12,12 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+console.log(error,"sdmsdmsm,dm,s");
 
   if (token) return <Navigate to="/" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting login with", { email, password });
-    
     const result = await dispatch(loginAdmin({ email, password }));
     if (loginAdmin.fulfilled.match(result)) navigate("/");
   };

@@ -9,6 +9,7 @@
 //   }
 // });
 
+
 // const storedUser = (() => {
 //   try {
 //     return JSON.parse(sessionStorage.getItem("hrms_admin_user"));
@@ -17,11 +18,13 @@
 //   }
 // })();
 
+// const storedToken = sessionStorage.getItem("hrms_admin_token") || null;
+
 // const authSlice = createSlice({
 //   name: "auth",
 //   initialState: {
 //     user: storedUser || null,
-//     token: storedUser ? "mock-jwt-token" : null,
+//     token: storedToken,
 //     status: "idle",
 //     error: null,
 //   },
@@ -30,6 +33,7 @@
 //       state.user = null;
 //       state.token = null;
 //       sessionStorage.removeItem("hrms_admin_user");
+//       sessionStorage.removeItem("hrms_admin_token");
 //     },
 //   },
 //   extraReducers: (builder) => {
@@ -41,12 +45,14 @@
 //       .addCase(loginAdmin.fulfilled, (state, action) => {
 //         state.status = "succeeded";
 //         state.user = action.payload.data.user;
-//         state.token = action.payload.data.accessToken
+//         state.token = action.payload.data.accessToken;
+
 //         sessionStorage.setItem("hrms_admin_user", JSON.stringify(action.payload.data.user));
+//         sessionStorage.setItem("hrms_admin_token", action.payload.data.accessToken);
 //       })
 //       .addCase(loginAdmin.rejected, (state, action) => {
 //         state.status = "failed";
-//         state.error = action.payload || "Login faillsed";
+//         state.error = action.payload || "Login failed";
 //       });
 //   },
 // });
@@ -60,14 +66,19 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { login } from "../../api/authApi";
 
-export const loginAdmin = createAsyncThunk("auth/login", async (data, { rejectWithValue }) => {
-  try {
-    return await login(data);
-  } catch (err) {
-    return rejectWithValue(err.message);
+export const loginAdmin = createAsyncThunk(
+  "auth/login",
+  async (data, { rejectWithValue }) => {
+    try {
+      return await login(data);
+    } catch (err) {
+      // Backend ka actual error message use karo, generic axios message nahi
+      return rejectWithValue(
+        err.response?.data?.message || "Invalid email or password"
+      );
+    }
   }
-});
-
+);
 
 const storedUser = (() => {
   try {

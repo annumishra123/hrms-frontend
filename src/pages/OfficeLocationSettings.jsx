@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { MapPin, LocateFixed, Save, Building2 } from "lucide-react";
+import { MapPin, LocateFixed, Save, Building2, ShieldOff, ShieldCheck } from "lucide-react";
 import {
   fetchOfficeLocation,
   saveOfficeLocation,
@@ -16,15 +16,16 @@ export default function OfficeLocationSettings() {
     lat: "",
     lng: "",
     radiusMeters: 20,
+    restrictionEnabled: true,
   });
   const [locating, setLocating] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
+  const [toggleLoading, setToggleLoading] = useState(false);
 
   useEffect(() => {
     dispatch(fetchOfficeLocation());
   }, [dispatch]);
 
-  // Jab office DB se aa jaye, form ko pre-fill karo
   useEffect(() => {
     if (office) {
       setForm({
@@ -33,12 +34,38 @@ export default function OfficeLocationSettings() {
         lat: office.lat,
         lng: office.lng,
         radiusMeters: office.radiusMeters,
+        restrictionEnabled: office.restrictionEnabled ?? true,
       });
     }
   }, [office]);
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const toggleRestriction = async () => {
+    const nextValue = !form.restrictionEnabled;
+    const updatedForm = { ...form, restrictionEnabled: nextValue };
+
+    setForm(updatedForm);
+    setToggleLoading(true);
+    setSaveMsg(null);
+
+    const result = await dispatch(saveOfficeLocation(updatedForm));
+
+    setToggleLoading(false);
+
+    if (saveOfficeLocation.fulfilled.match(result)) {
+      setSaveMsg({
+        type: "success",
+        text: nextValue
+          ? "Location restriction ON kar diya gaya."
+          : "Location restriction OFF kar diya gaya — ab kisi bhi jagah se check-in ho sakta hai.",
+      });
+    } else {
+      setForm((f) => ({ ...f, restrictionEnabled: !nextValue }));
+      setSaveMsg({ type: "error", text: result.payload || "Toggle update nahi ho paya." });
+    }
   };
 
   const useCurrentLocation = () => {
@@ -67,7 +94,7 @@ export default function OfficeLocationSettings() {
     e.preventDefault();
     setSaveMsg(null);
 
-    if (!form.lat || !form.lng) {
+    if (form.restrictionEnabled && (!form.lat || !form.lng)) {
       setSaveMsg({ type: "error", text: "Latitude aur longitude bharna zaroori hai." });
       return;
     }
@@ -92,6 +119,47 @@ export default function OfficeLocationSettings() {
             Yahan se office ki location set karein — login sirf isi location ke radius ke andar hi allowed hoga.
           </p>
         </div>
+      </div>
+
+      <div
+        className={`flex items-center justify-between rounded-xl border p-4 mb-5 transition-colors ${
+          form.restrictionEnabled
+            ? "border-emerald-200 bg-emerald-50"
+            : "border-amber-200 bg-amber-50"
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          {form.restrictionEnabled ? (
+            <ShieldCheck size={20} className="text-emerald-600" />
+          ) : (
+            <ShieldOff size={20} className="text-amber-600" />
+          )}
+          <div>
+            <p className="text-sm font-semibold text-navy-800">
+              {form.restrictionEnabled ? "Location Restriction: ON" : "Location Restriction: OFF"}
+            </p>
+            <p className="text-xs text-navy-500">
+              {form.restrictionEnabled
+                ? "Employees sirf office radius ke andar hi check-in kar sakte hain."
+                : "⚠️ Employees kisi bhi location se check-in kar sakenge (radius check bypass)."}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={toggleRestriction}
+          disabled={toggleLoading}
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
+            form.restrictionEnabled ? "bg-emerald-500" : "bg-navy-300"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+              form.restrictionEnabled ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
       </div>
 
       <form
@@ -203,7 +271,10 @@ export default function OfficeLocationSettings() {
           <MapPin size={16} className="mt-0.5" />
           <p>
             Current set location: <b>{office.address || office.name}</b> — Lat {office.lat}, Lng{" "}
-            {office.lng}, Radius {office.radiusMeters}m
+            {office.lng}, Radius {office.radiusMeters}m —{" "}
+            <span className={office.restrictionEnabled ? "text-emerald-600" : "text-amber-600"}>
+              Restriction {office.restrictionEnabled ? "ON" : "OFF"}
+            </span>
           </p>
         </div>
       )}

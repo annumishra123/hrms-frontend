@@ -1,93 +1,100 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getPayrollOverview, getPayslips, downloadPayslipPdf } from "../../api/payrollApi";
 
-// ── Overview: stat cards + trend chart
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "../../api/interceptor";
+
 export const fetchPayrollOverview = createAsyncThunk(
   "payroll/fetchOverview",
-  async ({ month, year }, { rejectWithValue }) => {
-    try {
-      const res = await getPayrollOverview(month, year);
-      return res.data.data; // backend { success, data: {summary, trend} } bhejta hai maan ke chal rahe hain
-    } catch (err) {
-      return rejectWithValue(err?.response?.data?.message || "Failed to load payroll overview");
-    }
+  async ({ month, year }) => {
+    const { data } = await api.get("/payroll/overview", { params: { month, year } });
+    return data;
   }
 );
 
-// ── Payslips: paginated list
 export const fetchPayslips = createAsyncThunk(
   "payroll/fetchPayslips",
-  async ({ page, limit, search, status, month, year }, { rejectWithValue }) => {
-    try {
-      const res = await getPayslips({ page, limit, search, status, month, year });
-      return res.data.data; // { payslips: [...], totalCount, totalPages, currentPage }
-    } catch (err) {
-      return rejectWithValue(err?.response?.data?.message || "Failed to load payslips");
-    }
+  async ({ page, limit, search, status, month, year }) => {
+    const { data } = await api.get("/payroll/payslips", {
+      params: { page, limit, search, status, month, year },
+    });
+    return data;
   }
 );
 
-// ── Download: PDF blob ko trigger karke browser mein save karwata hai
 export const downloadPayslip = createAsyncThunk(
   "payroll/downloadPayslip",
-  async ({ payslipId, employeeName, month }, { rejectWithValue }) => {
-    try {
-      const res = await downloadPayslipPdf(payslipId);
-      // blob ko ek temporary link bana ke "click" karwa dete hain -> browser download shuru ho jaata hai
-      const url = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `Payslip-${employeeName}-${month}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      return payslipId;
-    } catch (err) {
-      return rejectWithValue("Failed to download payslip");
-    }
+  async ({ payslipId, employeeName, month }) => {
+    const response = await api.get(`/payroll/payslips/${payslipId}/pdf`, {
+      responseType: "blob",
+    });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Payslip-${employeeName}-${month}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    return payslipId;
   }
 );
+
+export const startPayrollRun = createAsyncThunk(
+  "payroll/startRun",
+  async ({ month, year }) => {
+    const { data } = await api.post("/payroll/run", { month, year });
+    return data;
+  }
+);
+
+export const pollPayrollRunStatus = createAsyncThunk(
+  "payroll/pollRunStatus",
+  async (runId) => {
+    const { data } = await api.get(`/payroll/run/${runId}/status`);
+    return data;
+  }
+);
+
+const initialState = {
+  summary: null,
+  trend: [],
+  overviewStatus: "idle",
+
+  payslips: [],
+  totalCount: 0,
+  totalPages: 1,
+  currentPage: 1,
+  payslipsStatus: "idle",
+
+  downloadingId: null,
+
+  run: {
+    runId: null,
+    status: "idle",
+    processed: 0,
+    total: 0,
+    errors: [],
+  },
+};
 
 const payrollSlice = createSlice({
   name: "payroll",
-  initialState: {
-    // overview
-    summary: null,
-    trend: [],
-    overviewStatus: "idle",
-    overviewError: null,
-
-    // payslips (paginated)
-    payslips: [],
-    totalCount: 0,
-    totalPages: 1,
-    currentPage: 1,
-    payslipsStatus: "idle",
-    payslipsError: null,
-
-    downloadingId: null,
+  initialState,
+  reducers: {
+    resetPayrollRun(state) {
+      state.run = initialState.run;
+    },
   },
-  reducers: {},
   extraReducers: (builder) => {
     builder
-      // overview
-      .addCase(fetchPayrollOverview.pending, (state) => {
-        state.overviewStatus = "loading";
-      })
+      .addCase(fetchPayrollOverview.pending, (state) => { state.overviewStatus = "loading"; })
       .addCase(fetchPayrollOverview.fulfilled, (state, action) => {
         state.overviewStatus = "succeeded";
         state.summary = action.payload.summary;
         state.trend = action.payload.trend;
       })
-      .addCase(fetchPayrollOverview.rejected, (state, action) => {
-        state.overviewStatus = "failed";
-        state.overviewError = action.payload;
-      })
-      // payslips
-      .addCase(fetchPayslips.pending, (state) => {
-        state.payslipsStatus = "loading";
-      })
+      .addCase(fetchPayrollOverview.rejected, (state) => { state.overviewStatus = "failed"; })
+
+      .addCase(fetchPayslips.pending, (state) => { state.payslipsStatus = "loading"; })
       .addCase(fetchPayslips.fulfilled, (state, action) => {
         state.payslipsStatus = "succeeded";
         state.payslips = action.payload.payslips;
@@ -95,21 +102,30 @@ const payrollSlice = createSlice({
         state.totalPages = action.payload.totalPages;
         state.currentPage = action.payload.currentPage;
       })
-      .addCase(fetchPayslips.rejected, (state, action) => {
-        state.payslipsStatus = "failed";
-        state.payslipsError = action.payload;
-      })
-      // download
+      .addCase(fetchPayslips.rejected, (state) => { state.payslipsStatus = "failed"; })
+
       .addCase(downloadPayslip.pending, (state, action) => {
         state.downloadingId = action.meta.arg.payslipId;
       })
-      .addCase(downloadPayslip.fulfilled, (state) => {
-        state.downloadingId = null;
+      .addCase(downloadPayslip.fulfilled, (state) => { state.downloadingId = null; })
+      .addCase(downloadPayslip.rejected, (state) => { state.downloadingId = null; })
+
+      .addCase(startPayrollRun.pending, (state) => { state.run.status = "queued"; })
+      .addCase(startPayrollRun.fulfilled, (state, action) => {
+        state.run.runId = action.payload.runId;
+        state.run.status = action.payload.status;
+        state.run.total = action.payload.totalEmployees;
+        state.run.processed = 0;
       })
-      .addCase(downloadPayslip.rejected, (state) => {
-        state.downloadingId = null;
+      .addCase(startPayrollRun.rejected, (state) => { state.run.status = "failed"; })
+      .addCase(pollPayrollRunStatus.fulfilled, (state, action) => {
+        state.run.status = action.payload.status;
+        state.run.processed = action.payload.processed;
+        state.run.total = action.payload.total;
+        state.run.errors = action.payload.errors || [];
       });
   },
 });
 
+export const { resetPayrollRun } = payrollSlice.actions;
 export default payrollSlice.reducer;
