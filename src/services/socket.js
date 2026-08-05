@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = "https://hrms-backend-monk.onrender.com/api/v1";
+const SOCKET_URL = "https://hrms-backend-monk.onrender.com";
 
 let socket = null;
 
@@ -79,4 +79,43 @@ export function listenNotificationNew(callback) {
 export function removeNotificationNewListener(callback) {
   if (!socket) return;
   socket.off('notification:new', callback);
+}
+
+
+
+// ---- Expense events ----
+export function listenExpenseNew(callback) {
+  if (!socket) return;
+  socket.on('expense:new', callback);
+}
+export function removeExpenseNewListener(callback) {
+  if (!socket) return;
+  socket.off('expense:new', callback);
+}
+
+export function listenExpenseUpdated(callback) {
+  if (!socket) return;
+  socket.on('expense:updated', callback);
+}
+export function removeExpenseUpdatedListener(callback) {
+  if (!socket) return;
+  socket.off('expense:updated', callback);
+}
+
+export function listenExpenseStatusChanged(callback) {
+  if (!socket) return;
+  socket.on('expense:statusChanged', callback);
+}
+export function removeExpenseStatusChangedListener(callback) {
+  if (!socket) return;
+  socket.off('expense:statusChanged', callback);
+}
+
+export function listenExpenseDeleted(callback) {
+  if (!socket) return;
+  socket.on('expense:deleted', callback);
+}
+export function removeExpenseDeletedListener(callback) {
+  if (!socket) return;
+  socket.off('expense:deleted', callback);
 }

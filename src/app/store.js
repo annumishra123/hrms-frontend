@@ -15,10 +15,10 @@ import usersReducer from "../features/users/usersSlice";
 import uiReducer from "../features/ui/uiSlice";
 import holidayReducer from '../features/holiday/holidaySlice'
 import ticketsAdminReducer from '../features/tickets/ticketsAdminSlice';
-
 import officeLocationReducer from "../features/officeLocation/officeLocationSlice";
-
 import notificationReducer from '../features/notifications/notificationSlice';
+import expenseReducer from "../features/expense/expenseSlice";
+
 
 
 export const store = configureStore({
@@ -41,5 +41,7 @@ export const store = configureStore({
     ticketsAdmin: ticketsAdminReducer,
     officeLocation: officeLocationReducer,
     adminNotifications:notificationReducer,
+    expenses: expenseReducer,
+
   },
 });

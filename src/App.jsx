@@ -29,8 +29,9 @@ import HolidayCalendar from "./pages/HolidayCalendar";
 import HelpdeskAdmin from "./pages/HelpdeskAdmin";
 
 import OfficeLocationSettings from "./pages/OfficeLocationSettings";
-
 import AdminSocketListener from "./components/AdminSocketListener";
+import ExpensesPage from "./pages/ExpensesPage";
+
 
 export default function App() {
   const user = useSelector((s) => s.auth.user);
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="/payroll/payslips" element={<PayrollPayslips />} />
 
           <Route path="/settings/office-location" element={<OfficeLocationSettings />} />
+          <Route path="/expenses" element={<ExpensesPage />} />
 
         </Route>
         <Route path="*" element={<Login />} />
