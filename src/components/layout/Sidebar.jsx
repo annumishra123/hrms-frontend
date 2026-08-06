@@ -213,6 +213,7 @@ import {
   ShieldCheck,
   ChevronDown,
   LifeBuoy,
+  ClipboardCheck,
   Receipt, // 🔴 NAYA — Expenses ke liye icon
 } from "lucide-react";
 import { closeSidebar } from "../../features/ui/uiSlice";
@@ -233,6 +234,7 @@ const NAV = [
     ],
   },
   { to: "/leave", label: "Leave Requests", icon: CalendarDays },
+  { to: "/regularize", label: "Regularize Requests", icon: ClipboardCheck },
   {
     label: "Payroll",
     icon: Wallet,

@@ -119,3 +119,26 @@ export function removeExpenseDeletedListener(callback) {
   if (!socket) return;
   socket.off('expense:deleted', callback);
 }
+
+
+
+
+
+// ---- Regularize events ----
+export function listenRegularizeNew(callback) {
+  if (!socket) return;
+  socket.on('regularize:new', callback);
+}
+export function removeRegularizeNewListener(callback) {
+  if (!socket) return;
+  socket.off('regularize:new', callback);
+}
+
+export function listenRegularizeUpdated(callback) {
+  if (!socket) return;
+  socket.on('regularize:updated', callback);
+}
+export function removeRegularizeUpdatedListener(callback) {
+  if (!socket) return;
+  socket.off('regularize:updated', callback);
+}

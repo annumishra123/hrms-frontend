@@ -18,6 +18,8 @@ import ticketsAdminReducer from '../features/tickets/ticketsAdminSlice';
 import officeLocationReducer from "../features/officeLocation/officeLocationSlice";
 import notificationReducer from '../features/notifications/notificationSlice';
 import expenseReducer from "../features/expense/expenseSlice";
+import regularizeReducer from "../features/regularize/regularizeSlice";
+
 
 
 
@@ -42,6 +44,7 @@ export const store = configureStore({
     officeLocation: officeLocationReducer,
     adminNotifications:notificationReducer,
     expenses: expenseReducer,
+    regularize: regularizeReducer
 
   },
 });

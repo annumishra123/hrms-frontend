@@ -31,6 +31,7 @@ import HelpdeskAdmin from "./pages/HelpdeskAdmin";
 import OfficeLocationSettings from "./pages/OfficeLocationSettings";
 import AdminSocketListener from "./components/AdminSocketListener";
 import ExpensesPage from "./pages/ExpensesPage";
+import RegularizeRequests from "./pages/RegularizeRequests";
 
 
 export default function App() {
@@ -85,6 +86,7 @@ export default function App() {
 
           <Route path="/settings/office-location" element={<OfficeLocationSettings />} />
           <Route path="/expenses" element={<ExpensesPage />} />
+          <Route path="/regularize" element={<RegularizeRequests />} />
 
         </Route>
         <Route path="*" element={<Login />} />
