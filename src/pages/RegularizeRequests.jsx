@@ -11,20 +11,15 @@ import {
   removeRegularizeNewListener,
   listenRegularizeUpdated,
   removeRegularizeUpdatedListener,
-} from "../services/socket"; 
+} from "../services/socket";
 import RegularizeDetailModal from "../components/regularize/RegularizeDetailModal";
 
-const STATUS_TABS = [
-  { key: "", label: "All" },
-  { key: "pending", label: "Pending" },
-  { key: "approved", label: "Approved" },
-  { key: "rejected", label: "Rejected" },
-];
+const STATUS_TABS = ["Pending", "Approved", "Rejected", "All"];
 
 const STATUS_META = {
-  pending: { label: "Pending", cls: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock },
-  approved: { label: "Approved", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
-  rejected: { label: "Rejected", cls: "bg-rose-50 text-rose-700 border-rose-200", icon: XCircle },
+  Pending: { cls: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock },
+  Approved: { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
+  Rejected: { cls: "bg-rose-50 text-rose-700 border-rose-200", icon: XCircle },
 };
 
 function formatDate(dateStr) {
@@ -37,14 +32,14 @@ export default function RegularizeRequests() {
   const dispatch = useDispatch();
   const { list, status, error } = useSelector((s) => s.regularize);
 
-  const [activeStatus, setActiveStatus] = useState("pending");
+  const [activeStatus, setActiveStatus] = useState("Pending");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
-  // ---- initial + tab-change fetch ----
+  // ---- ek hi baar sara data fetch (Leave.jsx jaisa) ----
   useEffect(() => {
-    dispatch(fetchAllRegularizeRequests(activeStatus));
-  }, [dispatch, activeStatus]);
+    dispatch(fetchAllRegularizeRequests()); // status param nahi bhejte — sab kuch le aao
+  }, [dispatch]);
 
   // ---- realtime socket listeners ----
   useEffect(() => {
@@ -60,18 +55,32 @@ export default function RegularizeRequests() {
     };
   }, [dispatch]);
 
+  // ---- client-side status + search filter (Leave.jsx jaisa hi) ----
   const filtered = useMemo(() => {
-    if (!search.trim()) return list;
-    const q = search.toLowerCase();
-    return list.filter(
-      (r) =>
-        r.employeeName?.toLowerCase().includes(q) ||
-        r.employeeCode?.toLowerCase().includes(q) ||
-        r.date?.includes(q)
-    );
-  }, [list, search]);
+    let result =
+      activeStatus === "All"
+        ? list
+        : list.filter((r) => r.status?.toLowerCase() === activeStatus.toLowerCase());
 
-  const pendingCount = list.filter((r) => r?.status === "pending").length;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (r) =>
+          r.employeeName?.toLowerCase().includes(q) ||
+          r.employeeCode?.toLowerCase().includes(q) ||
+          r.date?.includes(q)
+      );
+    }
+
+    return result;
+  }, [list, search, activeStatus]);
+
+  const counts = {
+    Pending: list.filter((r) => r.status?.toLowerCase() === "pending").length,
+    Approved: list.filter((r) => r.status?.toLowerCase() === "approved").length,
+    Rejected: list.filter((r) => r.status?.toLowerCase() === "rejected").length,
+  };
+
   const loading = status === "loading";
 
   return (
@@ -84,7 +93,7 @@ export default function RegularizeRequests() {
           </p>
         </div>
         <button
-          onClick={() => dispatch(fetchAllRegularizeRequests(activeStatus))}
+          onClick={() => dispatch(fetchAllRegularizeRequests())}
           className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-navy-200 text-navy-600 text-sm font-medium hover:bg-navy-50 transition-colors"
         >
           <RefreshCcw size={15} className={loading ? "animate-spin" : ""} />
@@ -96,18 +105,16 @@ export default function RegularizeRequests() {
         <div className="flex items-center gap-1 bg-navy-50 p-1 rounded-lg">
           {STATUS_TABS.map((tab) => (
             <button
-              key={tab.key}
-              onClick={() => setActiveStatus(tab.key)}
+              key={tab}
+              onClick={() => setActiveStatus(tab)}
               className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                activeStatus === tab.key
+                activeStatus === tab
                   ? "bg-white text-navy-900 shadow-sm"
                   : "text-navy-500 hover:text-navy-800"
               }`}
             >
-              {tab.label}
-              {tab.key === "pending" && pendingCount > 0 && (
-                <span className="ml-1.5 text-xs font-bold text-amber-600">({pendingCount})</span>
-              )}
+              {tab}
+              {tab !== "All" && counts[tab] !== undefined && ` (${counts[tab]})`}
             </button>
           ))}
         </div>
@@ -136,7 +143,7 @@ export default function RegularizeRequests() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {loading && !list.length ? (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-navy-400">
                   Loading requests...
@@ -156,7 +163,10 @@ export default function RegularizeRequests() {
               </tr>
             ) : (
               filtered.map((req) => {
-                const meta = STATUS_META[req.status] || STATUS_META.pending;
+                // Backend status "pending"/"approved"/"rejected" (lowercase) hai — display ke liye capitalize
+                const displayStatus =
+                  req.status?.charAt(0).toUpperCase() + req.status?.slice(1);
+                const meta = STATUS_META[displayStatus] || STATUS_META.Pending;
                 const StatusIcon = meta.icon;
                 return (
                   <tr
@@ -176,7 +186,7 @@ export default function RegularizeRequests() {
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${meta.cls}`}>
                         <StatusIcon size={12} />
-                        {meta.label}
+                        {displayStatus}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">

@@ -59,8 +59,8 @@ export default function OfficeLocationSettings() {
       setSaveMsg({
         type: "success",
         text: nextValue
-          ? "Location restriction ON kar diya gaya."
-          : "Location restriction OFF kar diya gaya — ab kisi bhi jagah se check-in ho sakta hai.",
+          ? "Location restriction has been turned ON."
+          : "Location restriction has been turned OFF — employees can now check in from any location.",
       });
     } else {
       setForm((f) => ({ ...f, restrictionEnabled: !nextValue }));
@@ -70,7 +70,7 @@ export default function OfficeLocationSettings() {
 
   const useCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setSaveMsg({ type: "error", text: "Is browser mein geolocation support nahi hai." });
+      setSaveMsg({ type: "error", text: "This browser does not support geolocation." });
       return;
     }
     setLocating(true);
@@ -84,7 +84,7 @@ export default function OfficeLocationSettings() {
         setLocating(false);
       },
       (err) => {
-        setSaveMsg({ type: "error", text: "Location fetch nahi ho payi: " + err.message });
+        setSaveMsg({ type: "error", text: "Unable to fetch the location: " + err.message });
         setLocating(false);
       }
     );
@@ -95,15 +95,15 @@ export default function OfficeLocationSettings() {
     setSaveMsg(null);
 
     if (form.restrictionEnabled && (!form.lat || !form.lng)) {
-      setSaveMsg({ type: "error", text: "Latitude aur longitude bharna zaroori hai." });
+      setSaveMsg({ type: "error", text: "Latitude and longitude are required.." });
       return;
     }
 
     const result = await dispatch(saveOfficeLocation(form));
     if (saveOfficeLocation.fulfilled.match(result)) {
-      setSaveMsg({ type: "success", text: "Office location successfully save ." });
+      setSaveMsg({ type: "success", text: "Office location saved successfully." });
     } else {
-      setSaveMsg({ type: "error", text: result.payload || "Save karne mein error aayi." });
+      setSaveMsg({ type: "error", text: result.payload || "An error occurred while saving.." });
     }
   };
 
@@ -116,7 +116,7 @@ export default function OfficeLocationSettings() {
         <div>
           <h1 className="font-display font-bold text-lg text-navy-900">Office Location</h1>
           <p className="text-sm text-navy-500">
-            Yahan se office ki location set karein — login sirf isi location ke radius ke andar hi allowed hoga.
+          Set the office location here — login will only be allowed within the specified radius of this location.
           </p>
         </div>
       </div>
@@ -140,8 +140,8 @@ export default function OfficeLocationSettings() {
             </p>
             <p className="text-xs text-navy-500">
               {form.restrictionEnabled
-                ? "Employees sirf office radius ke andar hi check-in kar sakte hain."
-                : "⚠️ Employees kisi bhi location se check-in kar sakenge (radius check bypass)."}
+                ? "Employees can check in only when they are within the office radius."
+                : "⚠️ Employees can check in from any location (radius check bypassed)."}
             </p>
           </div>
         </div>
@@ -228,7 +228,7 @@ export default function OfficeLocationSettings() {
             className="w-full rounded-lg border border-navy-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
           <p className="text-xs text-navy-400 mt-1">
-            Mobile GPS accuracy generally 5-15m hoti hai, isliye 15-30m recommended hai.
+          Mobile GPS accuracy is generally within 5–15 meters, so an accuracy range of 15–30 meters is recommended.
           </p>
         </div>
 

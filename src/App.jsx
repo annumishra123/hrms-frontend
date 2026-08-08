@@ -9,7 +9,6 @@ import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
 import Attendance from "./pages/Attendance";
 import Leave from "./pages/Leave";
-import Payroll from "./pages/Payroll";
 import Recruitment from "./pages/Recruitment";
 import Performance from "./pages/Performance";
 import OrgChart from "./pages/OrgChart";
@@ -33,6 +32,10 @@ import AdminSocketListener from "./components/AdminSocketListener";
 import ExpensesPage from "./pages/ExpensesPage";
 import RegularizeRequests from "./pages/RegularizeRequests";
 
+// NOTE: purana "Payroll" page (./pages/Payroll) ab kahin bhi import/use
+// nahi ho raha — wo dead/unused page tha jo hamesha "Loading payroll..."
+// dikhata tha kyunki uska data fetch comment-out tha. Route "/payroll"
+// ab sirf PayrollOverview par map hota hai.
 
 export default function App() {
   const user = useSelector((s) => s.auth.user);
@@ -65,7 +68,6 @@ export default function App() {
           <Route path="employees" element={<Employees />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="leave" element={<Leave />} />
-          <Route path="payroll" element={<Payroll />} />
           <Route path="recruitment" element={<Recruitment />} />
           <Route path="performance" element={<Performance />} />
           <Route path="org-chart" element={<OrgChart />} />
@@ -81,13 +83,13 @@ export default function App() {
           <Route path="/holiday-calendar" element={<HolidayCalendar />} />
           <Route path="/helpdesk" element={<HelpdeskAdmin />} />
 
+          {/* FIX: sirf ek hi /payroll route — PayrollOverview (Run Payroll wala) */}
           <Route path="/payroll" element={<PayrollOverview />} />
           <Route path="/payroll/payslips" element={<PayrollPayslips />} />
 
           <Route path="/settings/office-location" element={<OfficeLocationSettings />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/regularize" element={<RegularizeRequests />} />
-
         </Route>
         <Route path="*" element={<Login />} />
       </Routes>

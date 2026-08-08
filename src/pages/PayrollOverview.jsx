@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { Wallet, Users, Clock3, TrendingUp, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
-import { fetchPayrollOverview } from "../features/payroll/payrollSlice";
+import { Wallet, Users, Clock3, TrendingUp, ChevronLeft, ChevronRight, AlertCircle, Download } from "lucide-react";
+import { fetchPayrollOverview, exportPayrollSummary } from "../features/payroll/payrollSlice";
 import PageHeader from "../components/ui/PageHeader";
 import StatCard from "../components/ui/StatCard";
 import Spinner from "../components/ui/Spinner";
@@ -17,8 +17,7 @@ const inr = (n) => `₹${(n ?? 0).toLocaleString("en-IN")}`;
 
 export default function PayrollOverview() {
   const dispatch = useDispatch();
-  const { summary, trend } = useSelector((s) => s.payroll);
-  const overviewStatus = false
+  const { summary, trend, overviewStatus, exporting } = useSelector((s) => s.payroll);
 
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth());
@@ -40,23 +39,36 @@ export default function PayrollOverview() {
     else setMonth((m) => m + 1);
   };
 
+  const handleExport = () => {
+    dispatch(exportPayrollSummary({ month: month + 1, year }));
+  };
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <PageHeader title="Payroll Overview" subtitle={`Payroll run for ${MONTHS[month]} ${year}`} />
-        <div className="flex items-center gap-2">
-          <button onClick={goPrevMonth} className="p-1.5 rounded-lg hover:bg-slate-100">
-            <ChevronLeft size={18} className="text-slate-500" />
-          </button>
-          <span className="text-sm font-semibold text-slate-700 w-32 text-center">
-            {MONTHS[month]} {year}
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button onClick={goPrevMonth} className="p-1.5 rounded-lg hover:bg-slate-100">
+              <ChevronLeft size={18} className="text-slate-500" />
+            </button>
+            <span className="text-sm font-semibold text-slate-700 w-32 text-center">
+              {MONTHS[month]} {year}
+            </span>
+            <button
+              onClick={goNextMonth}
+              disabled={isCurrentMonth}
+              className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={18} className="text-slate-500" />
+            </button>
+          </div>
           <button
-            onClick={goNextMonth}
-            disabled={isCurrentMonth}
-            className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-lg px-3 py-2 hover:bg-slate-50 disabled:opacity-50"
           >
-            <ChevronRight size={18} className="text-slate-500" />
+            <Download size={15} /> {exporting ? "Exporting..." : "Export Excel"}
           </button>
         </div>
       </div>

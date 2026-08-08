@@ -274,7 +274,7 @@ export default function PayrollPayslips() {
         )}
       </div>
 
-      {/* Payslip detail modal - same as before */}
+      {/* Payslip detail modal */}
       <Modal open={!!selected} onClose={() => setSelected(null)} title="Payslip Detail">
         {selected && (
           <div>
@@ -285,6 +285,27 @@ export default function PayrollPayslips() {
                 <p className="text-xs text-slate-400">{selected.designation} · {selected.empId}</p>
               </div>
             </div>
+
+            {/* Attendance Summary */}
+            <div className="grid grid-cols-4 gap-2 mb-5 p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="text-center">
+                <p className="text-[10px] text-slate-400 uppercase font-semibold">Total Days</p>
+                <p className="text-sm font-bold text-slate-700 mt-0.5">{selected.totalDays ?? "-"}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[10px] text-slate-400 uppercase font-semibold">Present</p>
+                <p className="text-sm font-bold text-teal-600 mt-0.5">{selected.presentDays ?? "-"}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[10px] text-slate-400 uppercase font-semibold">Paid Leave</p>
+                <p className="text-sm font-bold text-slate-700 mt-0.5">{selected.paidLeaveDays ?? "-"}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[10px] text-slate-400 uppercase font-semibold">LOP Days</p>
+                <p className="text-sm font-bold text-rose-600 mt-0.5">{selected.lopDays ?? "-"}</p>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-xs font-semibold text-slate-400 uppercase mb-2">Earnings</p>
@@ -303,6 +324,13 @@ export default function PayrollPayslips() {
                 </div>
               </div>
             </div>
+
+            {selected.perDayRate != null && (
+              <p className="text-xs text-slate-400 mt-3">
+                Per-day rate: {inr(selected.perDayRate)} × {selected.payableDays ?? 0} payable days
+              </p>
+            )}
+
             <div className="flex items-center justify-between mt-5 pt-5 border-t border-slate-100">
               <p className="font-display font-bold text-slate-800">Net Pay</p>
               <p className="font-display font-bold text-xl text-navy-800">{inr(selected.net)}</p>
